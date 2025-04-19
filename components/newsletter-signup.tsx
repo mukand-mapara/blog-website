@@ -1,3 +1,6 @@
+"use client"
+
+import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,12 +17,15 @@ export function NewsletterSignup() {
         <form className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-            <Input type="email" placeholder="Enter your email" className="pl-9" required />
+            <motion.div whileFocus={{ scale: 1.02 }} className="w-full">
+              <Input type="email" placeholder="Enter your email" className="pl-9" required />
+            </motion.div>
           </div>
-          <Button type="submit">Subscribe</Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button type="submit">Subscribe</Button>
+          </motion.div>
         </form>
       </CardContent>
     </Card>
   )
 }
-

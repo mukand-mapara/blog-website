@@ -1,12 +1,12 @@
 "use client";
 
-import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { SearchForm } from "@/components/search-form";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   NavigationMenu,
@@ -18,13 +18,22 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Menu, Search, User, X } from "lucide-react";
+import { Menu, Search, User } from "lucide-react";
+import { fadeInDown } from "@/lib/animations";
 
 export function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const routes = [
     {
@@ -71,17 +80,16 @@ export function Header() {
     },
   ];
 
-  const handleMobileSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mobileSearchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(mobileSearchQuery.trim())}`);
-      setIsSearchOpen(false);
-      setMobileSearchQuery("");
-    }
-  };
-
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <motion.header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        scrolled && "shadow-sm"
+      )}
+      initial="hidden"
+      animate="visible"
+      variants={fadeInDown}
+    >
       <div className="container flex h-16 items-center">
         <Sheet>
           <SheetTrigger asChild>
@@ -110,9 +118,19 @@ export function Header() {
           </SheetContent>
         </Sheet>
 
-        <div className="mr-4 hidden md:flex">
+        <motion.div
+          className="mr-4 hidden md:flex"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold text-xl">DevBlog</span>
+            <motion.span
+              className="font-bold text-xl"
+              whileHover={{ scale: 1.05 }}
+            >
+              DevBlog
+            </motion.span>
           </Link>
           <NavigationMenu>
             <NavigationMenuList>
@@ -123,7 +141,13 @@ export function Header() {
                     <NavigationMenuContent>
                       <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                         {route.children.map((child) => (
-                          <li key={child.path}>
+                          <motion.li
+                            key={child.path}
+                            whileHover={{
+                              scale: 1.02,
+                              backgroundColor: "rgba(var(--accent), 0.2)",
+                            }}
+                          >
                             <NavigationMenuLink asChild>
                               <Link
                                 href={child.path}
@@ -137,7 +161,7 @@ export function Header() {
                                 </p>
                               </Link>
                             </NavigationMenuLink>
-                          </li>
+                          </motion.li>
                         ))}
                       </ul>
                     </NavigationMenuContent>
@@ -156,54 +180,61 @@ export function Header() {
               )}
             </NavigationMenuList>
           </NavigationMenu>
-        </div>
+        </motion.div>
 
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
-            {isSearchOpen ? (
-              <div className="relative">
-                <form onSubmit={handleMobileSearch}>
-                  <Search
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                    size={16}
-                  />
-                  <input
-                    type="search"
-                    placeholder="Search..."
-                    className="h-9 w-full rounded-md border border-input bg-background pl-10 pr-10 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                    value={mobileSearchQuery}
-                    onChange={(e) => setMobileSearchQuery(e.target.value)}
-                    autoFocus
-                  />
+            <AnimatePresence>
+              {isSearchOpen ? (
+                <motion.div
+                  className="relative"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "100%" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SearchForm inHeader={true} placeholder="Search..." />
                   <Button
-                    type="button"
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 transform -translate-y-1/2"
                     onClick={() => setIsSearchOpen(false)}
                   >
-                    <X className="h-4 w-4" />
                     <span className="sr-only">Close search</span>
+                    &times;
                   </Button>
-                </form>
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsSearchOpen(true)}
-              >
-                <Search className="h-5 w-5" />
-                <span className="sr-only">Search</span>
-              </Button>
-            )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSearchOpen(true)}
+                  >
+                    <Search className="h-5 w-5" />
+                    <span className="sr-only">Search</span>
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <ModeToggle />
-          <Button size="sm" className="hidden md:flex">
-            <Link href="/admin">Admin</Link>
-          </Button>
+          {/* <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button variant="ghost" size="icon">
+              <User className="h-5 w-5" />
+              <span className="sr-only">User account</span>
+            </Button>
+          </motion.div> */}
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button size="sm" className="hidden md:flex">
+              <Link href="/admin">Admin</Link>
+            </Button>
+          </motion.div>
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

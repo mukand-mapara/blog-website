@@ -1,6 +1,11 @@
+"use client"
+
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { PostCard } from "@/components/post-card"
 import type { Post } from "@/lib/posts"
+import { staggerChildren } from "@/lib/animations"
+import { AnimatedContainer } from "@/components/animated-container"
 
 interface RelatedPostsProps {
   posts?: Post[]
@@ -63,12 +68,18 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
           View all posts
         </Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {relatedPosts.map((post) => (
-          <PostCard key={post.id} post={post} />
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        variants={staggerChildren}
+        initial="hidden"
+        animate="visible"
+      >
+        {relatedPosts.map((post, index) => (
+          <AnimatedContainer key={post.id} delay={0.1 * index}>
+            <PostCard post={post} />
+          </AnimatedContainer>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }
-
