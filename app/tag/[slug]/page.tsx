@@ -1,43 +1,49 @@
-import { Suspense } from "react"
-import Link from "next/link"
-import { notFound } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { PostCard } from "@/components/post-card"
-import { SearchForm } from "@/components/search-form"
-import { Pagination } from "@/components/pagination"
-import { getPostsByTag, getAllTags } from "@/lib/posts"
+import { Suspense } from "react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { PostCard } from "@/components/post-card";
+import { SearchForm } from "@/components/search-form";
+import { Pagination } from "@/components/pagination";
+import { getPostsByTag, getAllTags } from "@/lib/posts";
 
-export default function TagPage({
+export default async function TagPage({
   params,
   searchParams,
 }: {
-  params: { slug: string }
-  searchParams: { page?: string }
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const currentPage = Number(searchParams.page) || 1
-  const postsPerPage = 9
-  const allTags = getAllTags()
+  const { slug } = await params;
+  const { page } = await searchParams;
 
-  // Convert slug to tag name (replace hyphens with spaces and capitalize)
-  const tagName = params.slug
+  const currentPage = Number(page) || 1;
+  const postsPerPage = 9;
+  const allTags = getAllTags();
+
+  const tagName = slug
     .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ")
+    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 
-  // Check if tag exists
   if (!allTags.includes(tagName)) {
-    notFound()
+    notFound();
   }
 
-  const posts = getPostsByTag(tagName)
-  const totalPages = Math.ceil(posts.length / postsPerPage)
-  const displayPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
+  const posts = getPostsByTag(tagName);
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const displayPosts = posts.slice(
+    (currentPage - 1) * postsPerPage,
+    currentPage * postsPerPage
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Tag: {tagName}</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mb-6">Browse all articles tagged with "{tagName}"</p>
+        <p className="text-xl text-muted-foreground max-w-2xl mb-6">
+          Browse all articles tagged with "{tagName}"
+        </p>
         <div className="w-full max-w-2xl">
           <SearchForm />
         </div>
@@ -61,7 +67,9 @@ export default function TagPage({
         </div>
       </div>
 
-      <Suspense fallback={<div className="text-center py-12">Loading posts...</div>}>
+      <Suspense
+        fallback={<div className="text-center py-12">Loading posts...</div>}
+      >
         {displayPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayPosts.map((post) => (
@@ -70,7 +78,9 @@ export default function TagPage({
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-muted-foreground mb-4">No posts found with this tag.</p>
+            <p className="text-muted-foreground mb-4">
+              No posts found with this tag.
+            </p>
             <Button asChild>
               <Link href="/blog">View all posts</Link>
             </Button>
@@ -80,10 +90,13 @@ export default function TagPage({
 
       {totalPages > 1 && (
         <div className="mt-12">
-          <Pagination totalPages={totalPages} currentPage={currentPage} basePath={`/tag/${params.slug}`} />
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            basePath={`/tag/${slug}`}
+          />
         </div>
       )}
     </div>
-  )
+  );
 }
-

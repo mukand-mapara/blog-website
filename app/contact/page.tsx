@@ -237,7 +237,7 @@ export default function ContactPage() {
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" size="icon" asChild>
                   <Link
-                  target="_blank"
+                    target="_blank"
                     href="https://www.linkedin.com/in/mukand-mapara/"
                     aria-label="LinkedIn"
                   >
@@ -246,7 +246,7 @@ export default function ContactPage() {
                 </Button>
                 <Button variant="outline" size="icon" asChild>
                   <Link
-                  target="_blank"
+                    target="_blank"
                     href="https://github.com/mukand-mapara"
                     aria-label="GitHub"
                   >
